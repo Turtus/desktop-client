@@ -23,6 +23,8 @@ type FolderProps = {
   totalListeners: number;
   connectedListeners: number;
   connectionIds: string[];
+  /** Keeps the folder expanded regardless of the toggle, e.g. while filtering. */
+  forceOpen?: boolean;
   children: React.ReactNode;
 };
 
@@ -31,9 +33,11 @@ const TagFolderRow: React.FC<FolderProps> = ({
   totalListeners,
   connectedListeners,
   connectionIds,
+  forceOpen = false,
   children,
 }: PropsWithChildren<FolderProps>): ReactElement => {
   const [open, setOpen] = React.useState<boolean>(false);
+  const expanded = open || forceOpen;
   const [confirmation, setConfirmation] = React.useState<ConfirmationDialogProps | null>(null);
   const [exportFile, setExportFile] = React.useState<ExportFile | null>(null);
 
@@ -95,7 +99,7 @@ const TagFolderRow: React.FC<FolderProps> = ({
               onClick={toggleOpen}
               size="large"
             >
-              {open ? <OpenFolder /> : <ClosedFolder />}
+              {expanded ? <OpenFolder /> : <ClosedFolder />}
             </IconButton>
           </Grid>
           <Grid size="grow" sx={{ minWidth: 0 }} onClick={toggleOpen}>
@@ -161,7 +165,7 @@ const TagFolderRow: React.FC<FolderProps> = ({
         <Grid size={12}>
           <Divider />
         </Grid>
-        {open && children}
+        {expanded && children}
       </Grid>
     </>
   );

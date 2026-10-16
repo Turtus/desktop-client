@@ -9,6 +9,8 @@ type VirtualFolderProps = {
   folderName: string;
   totalListeners: number;
   connectedListeners: number;
+  /** Keeps the folder expanded regardless of the toggle, e.g. while filtering. */
+  forceOpen?: boolean;
   children: React.ReactNode;
 };
 
@@ -16,9 +18,11 @@ const VirtualFolderRow: React.FC<VirtualFolderProps> = ({
   folderName,
   totalListeners,
   connectedListeners,
+  forceOpen = false,
   children,
 }: PropsWithChildren<VirtualFolderProps>): ReactElement => {
   const [open, setOpen] = React.useState<boolean>(false);
+  const expanded = open || forceOpen;
 
   const toggleOpen = () => {
     setOpen(!open);
@@ -35,7 +39,7 @@ const VirtualFolderRow: React.FC<VirtualFolderProps> = ({
             onClick={toggleOpen}
             size="large"
           >
-            {open ? <VirtualOpenFolder /> : <VirtualClosedFolder />}
+            {expanded ? <VirtualOpenFolder /> : <VirtualClosedFolder />}
           </IconButton>
         </Grid>
         <Grid size="grow" sx={{ minWidth: 0 }} onClick={toggleOpen}>
@@ -59,7 +63,7 @@ const VirtualFolderRow: React.FC<VirtualFolderProps> = ({
       <Grid size={12}>
         <Divider />
       </Grid>
-      {open && children}
+      {expanded && children}
     </Grid>
   );
 };

@@ -1,7 +1,17 @@
-import { Button, CardContent, Container, Grid, Stack, Typography } from "@mui/material";
+import {
+  Button,
+  CardContent,
+  Container,
+  Grid,
+  IconButton,
+  InputAdornment,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { ReactElement, useEffect, useState } from "react";
-import { Save, Upload } from "react-feather";
+import { Filter, Save, Upload, X } from "react-feather";
 
 import {
   DELETE,
@@ -17,6 +27,7 @@ import {
 } from "../../shared/constants";
 import { ipcRenderer } from "../../shared/electron";
 import { ListenerStatus, Record as ListenerRecord, Selector } from "../../shared/pb/types";
+import { byConnectionName, compareTitles } from "../../shared/sorting";
 import ConnectionRow from "../components/ConnectionRow";
 import ExportDialog, { IpcRendererEventListener } from "../components/ExportDialog";
 import NewConnectionButton from "../components/NewConnectionButton";
@@ -24,18 +35,11 @@ import StyledCard from "../components/StyledCard";
 import TagFolderRow from "../components/TagFolderRow";
 import VirtualFolderRow from "../components/VirtualFolderRow";
 
-// Keep the lists alphabetical. `numeric` so "Subgraph 2" sorts ahead of
-// "Subgraph 10", and `sensitivity` so casing doesn't split the ordering.
-const compareTitles = (a: string, b: string): number =>
-  a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
-
-const byConnectionName = (a: ListenerRecord, b: ListenerRecord): number =>
-  compareTitles(a?.conn?.name || "", b?.conn?.name || "");
-
 function ManageConnections(): ReactElement {
   const [folderNames, setFolderNames] = useState([] as string[]);
   const [connections, setConnections] = useState([] as ListenerRecord[]);
   const [exportFile, setExportFile] = useState<ExportFile | null>(null);
+  const [filter, setFilter] = useState("");
   const [statuses, setStatuses] = useState<Record<string, ListenerStatus>>({});
   const { enqueueSnackbar } = useSnackbar();
 
@@ -154,7 +158,17 @@ function ManageConnections(): ReactElement {
     };
   }, []);
 
-  const untagged = connections?.filter((connection) => !connection?.tags?.length);
+  // An empty filter leaves the list untouched; otherwise only connections whose
+  // title contains the text survive, and folders expand so matches are visible.
+  const filterText = filter.trim().toLowerCase();
+  const filtering = filterText.length > 0;
+  const visibleConnections = filtering
+    ? connections.filter((connection) =>
+        (connection?.conn?.name || "").toLowerCase().includes(filterText),
+      )
+    : connections;
+
+  const untagged = visibleConnections?.filter((connection) => !connection?.tags?.length);
 
   return (
     <>
@@ -208,12 +222,52 @@ function ManageConnections(): ReactElement {
               </Grid>
             </Grid>
           </Grid>
+          <Grid>
+            <TextField
+              id="connection-filter"
+              label="Filter"
+              placeholder="Filter connections by name"
+              value={filter}
+              onChange={(evt) => setFilter(evt.target.value)}
+              size="small"
+              fullWidth
+              sx={{ maxWidth: 420 }}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Filter size={16} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: filtering ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="clear filter"
+                        size="small"
+                        onClick={() => setFilter("")}
+                      >
+                        <X size={16} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+                },
+              }}
+            />
+          </Grid>
           <StyledCard>
             <CardContent>
+              {filtering && visibleConnections.length === 0 && (
+                <Typography variant="subtitle2" sx={{ p: 2 }}>
+                  No connections match “{filter.trim()}”.
+                </Typography>
+              )}
               {folderNames.map((folderName) => {
-                const folderConns = connections.filter(
+                const folderConns = visibleConnections.filter(
                   (connection) => connection?.tags?.indexOf(folderName) >= 0,
                 );
+                if (filtering && folderConns.length === 0) {
+                  return null;
+                }
                 return (
                   <TagFolderRow
                     key={"folderRow" + folderName}
@@ -221,6 +275,7 @@ function ManageConnections(): ReactElement {
                     connectedListeners={getConnectedCount(folderConns)}
                     totalListeners={folderConns.length}
                     connectionIds={folderConns.map((rec) => rec.id as string)}
+                    forceOpen={filtering}
                   >
                     {folderConns.map((record) => {
                       return (
@@ -236,40 +291,46 @@ function ManageConnections(): ReactElement {
                   </TagFolderRow>
                 );
               })}
-              <VirtualFolderRow
-                folderName="All Connections"
-                totalListeners={connections.length}
-                connectedListeners={getConnectedCount(connections)}
-              >
-                {connections.map((record) => {
-                  return (
-                    <ConnectionRow
-                      key={"connectionRowAllConnections" + record.id}
-                      folderName="All Connections"
-                      connection={record}
-                      connected={!!record?.id && statuses[record.id as string]?.listening}
-                      port={statuses[record.id as string]?.listenAddr || ""}
-                    />
-                  );
-                })}
-              </VirtualFolderRow>
-              <VirtualFolderRow
-                folderName="Untagged"
-                totalListeners={untagged.length}
-                connectedListeners={getConnectedCount(untagged)}
-              >
-                {untagged.map((record) => {
-                  return (
-                    <ConnectionRow
-                      key={"connectionRowUntagged" + record.id}
-                      folderName="Untagged"
-                      connection={record}
-                      connected={!!record?.id && statuses[record.id as string]?.listening}
-                      port={statuses[record.id as string]?.listenAddr || ""}
-                    />
-                  );
-                })}
-              </VirtualFolderRow>
+              {(!filtering || visibleConnections.length > 0) && (
+                <VirtualFolderRow
+                  folderName="All Connections"
+                  totalListeners={visibleConnections.length}
+                  connectedListeners={getConnectedCount(visibleConnections)}
+                  forceOpen={filtering}
+                >
+                  {visibleConnections.map((record) => {
+                    return (
+                      <ConnectionRow
+                        key={"connectionRowAllConnections" + record.id}
+                        folderName="All Connections"
+                        connection={record}
+                        connected={!!record?.id && statuses[record.id as string]?.listening}
+                        port={statuses[record.id as string]?.listenAddr || ""}
+                      />
+                    );
+                  })}
+                </VirtualFolderRow>
+              )}
+              {(!filtering || untagged.length > 0) && (
+                <VirtualFolderRow
+                  folderName="Untagged"
+                  totalListeners={untagged.length}
+                  connectedListeners={getConnectedCount(untagged)}
+                  forceOpen={filtering}
+                >
+                  {untagged.map((record) => {
+                    return (
+                      <ConnectionRow
+                        key={"connectionRowUntagged" + record.id}
+                        folderName="Untagged"
+                        connection={record}
+                        connected={!!record?.id && statuses[record.id as string]?.listening}
+                        port={statuses[record.id as string]?.listenAddr || ""}
+                      />
+                    );
+                  })}
+                </VirtualFolderRow>
+              )}
             </CardContent>
           </StyledCard>
         </Stack>
