@@ -26,8 +26,8 @@ const VirtualFolderRow: React.FC<VirtualFolderProps> = ({
 
   return (
     <Grid container>
-      <Grid container size={12} sx={{ alignItems: "center" }}>
-        <Grid size={1}>
+      <Grid container size={12} sx={{ alignItems: "center", flexWrap: "nowrap" }}>
+        <Grid size="auto">
           <IconButton
             key={"menuButton" + folderName}
             aria-label={"toggle listeners for " + folderName}
@@ -38,23 +38,26 @@ const VirtualFolderRow: React.FC<VirtualFolderProps> = ({
             {open ? <VirtualOpenFolder /> : <VirtualClosedFolder />}
           </IconButton>
         </Grid>
-        <Grid size={3} onClick={toggleOpen}>
-          <Typography variant="h6">{folderName}</Typography>
+        <Grid size="grow" sx={{ minWidth: 0 }} onClick={toggleOpen}>
+          <Typography variant="h6" noWrap title={folderName}>
+            {folderName}
+          </Typography>
         </Grid>
-        <Grid container size={5} onClick={toggleOpen}>
-          &nbsp;
-        </Grid>
-        <Grid container size={2} sx={{ justifyContent: "flex-end" }} onClick={toggleOpen}>
-          <Typography variant="subtitle2">
+        <Grid
+          container
+          size="auto"
+          sx={{ justifyContent: "flex-end", flexWrap: "nowrap" }}
+          onClick={toggleOpen}
+        >
+          <Typography variant="subtitle2" noWrap>
             {connectedListeners} of {totalListeners} listening
           </Typography>
         </Grid>
-        <Grid size={1} />
+        {/* Keeps the counts clear of the menu column the other rows carry. */}
+        <Grid size="auto" sx={{ width: 48 }} />
       </Grid>
-      <Grid container size={12}>
-        <Grid size={12}>
-          <Divider />
-        </Grid>
+      <Grid size={12}>
+        <Divider />
       </Grid>
       {open && children}
     </Grid>

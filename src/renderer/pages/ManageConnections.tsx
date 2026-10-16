@@ -24,6 +24,14 @@ import StyledCard from "../components/StyledCard";
 import TagFolderRow from "../components/TagFolderRow";
 import VirtualFolderRow from "../components/VirtualFolderRow";
 
+// Keep the lists alphabetical. `numeric` so "Subgraph 2" sorts ahead of
+// "Subgraph 10", and `sensitivity` so casing doesn't split the ordering.
+const compareTitles = (a: string, b: string): number =>
+  a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
+
+const byConnectionName = (a: ListenerRecord, b: ListenerRecord): number =>
+  compareTitles(a?.conn?.name || "", b?.conn?.name || "");
+
 function ManageConnections(): ReactElement {
   const [folderNames, setFolderNames] = useState([] as string[]);
   const [connections, setConnections] = useState([] as ListenerRecord[]);
@@ -59,7 +67,7 @@ function ManageConnections(): ReactElement {
   useEffect(() => {
     ipcRenderer.on(GET_UNIQUE_TAGS, (_, args) => {
       if (args.tags && !args.err) {
-        setFolderNames(args.tags);
+        setFolderNames([...args.tags].sort(compareTitles));
       }
     });
     ipcRenderer.on(GET_ALL_RECORDS, (_, args) => {
@@ -69,7 +77,7 @@ function ManageConnections(): ReactElement {
           autoHideDuration: TOAST_LENGTH,
         });
       } else {
-        setConnections(args.res.records);
+        setConnections([...args.res.records].sort(byConnectionName));
       }
     });
     ipcRenderer.on(LISTENER_STATUS, (_, args) => {

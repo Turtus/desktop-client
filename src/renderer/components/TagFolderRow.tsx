@@ -86,8 +86,8 @@ const TagFolderRow: React.FC<FolderProps> = ({
       )}
       <ExportDialog exportFile={exportFile} onClose={() => setExportFile(null)} />
       <Grid container>
-        <Grid container size={12} sx={{ alignItems: "center" }}>
-          <Grid size={1}>
+        <Grid container size={12} sx={{ alignItems: "center", flexWrap: "nowrap" }}>
+          <Grid size="auto">
             <IconButton
               key={"menuButton" + folderName}
               aria-label={"toggle listeners for " + folderName}
@@ -98,18 +98,22 @@ const TagFolderRow: React.FC<FolderProps> = ({
               {open ? <OpenFolder /> : <ClosedFolder />}
             </IconButton>
           </Grid>
-          <Grid size={3} onClick={toggleOpen}>
-            <Typography variant="h6">{folderName}</Typography>
+          <Grid size="grow" sx={{ minWidth: 0 }} onClick={toggleOpen}>
+            <Typography variant="h6" noWrap title={folderName}>
+              {folderName}
+            </Typography>
           </Grid>
-          <Grid container size={5} onClick={toggleOpen}>
-            &nbsp;
-          </Grid>
-          <Grid container size={2} sx={{ justifyContent: "flex-end" }} onClick={toggleOpen}>
-            <Typography variant="subtitle2">
+          <Grid
+            container
+            size="auto"
+            sx={{ justifyContent: "flex-end", flexWrap: "nowrap" }}
+            onClick={toggleOpen}
+          >
+            <Typography variant="subtitle2" noWrap>
               {connectedListeners} of {totalListeners} listening
             </Typography>
           </Grid>
-          <Grid container size={1} sx={{ justifyContent: "center" }}>
+          <Grid container size="auto" sx={{ justifyContent: "center" }}>
             <IconButton
               aria-controls="folder-menu"
               aria-haspopup="true"
@@ -154,10 +158,8 @@ const TagFolderRow: React.FC<FolderProps> = ({
             </Menu>
           </Grid>
         </Grid>
-        <Grid container size={12}>
-          <Grid size={12}>
-            <Divider />
-          </Grid>
+        <Grid size={12}>
+          <Divider />
         </Grid>
         {open && children}
       </Grid>

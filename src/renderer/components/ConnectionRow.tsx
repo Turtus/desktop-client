@@ -2,7 +2,6 @@ import { Typography, Grid, IconButton, Divider, MenuItem, Menu, Tooltip, Box } f
 import { useSnackbar } from "notistack";
 import React, { ReactElement } from "react";
 import { Copy, MoreVertical } from "react-feather";
-import { Link } from "react-router-dom";
 
 import {
   CONNECT,
@@ -104,9 +103,12 @@ const ConnectionRow: React.FC<ConnectionRowProps> = ({
   return (
     <>
       <ExportDialog exportFile={exportFile} onClose={() => setExportFile(null)} />
-      <Grid container>
-        <Grid container size={12} sx={{ alignItems: "center" }}>
-          <Grid container size={1} sx={{ justifyContent: "flex-end" }}>
+      {/* Rendered inside the parent folder's Grid container, so it needs a full
+          row to itself -- without a size it would shrink to fit and sit
+          alongside the neighbouring rows. */}
+      <Grid container size={12}>
+        <Grid container size={12} sx={{ alignItems: "center", flexWrap: "nowrap" }}>
+          <Grid size="auto">
             <IconButton
               key={"menuButton" + folderName}
               aria-label={"toggle listeners for " + folderName + " " + connection?.id || ""}
@@ -117,13 +119,16 @@ const ConnectionRow: React.FC<ConnectionRowProps> = ({
               {connected ? <Connected /> : <Disconnected />}
             </IconButton>
           </Grid>
-          <Grid size={3}>
-            <Typography variant="h6">{connection?.conn?.name || ""}</Typography>
+          <Grid size="grow" sx={{ minWidth: 0 }}>
+            <Typography variant="h6" noWrap title={connection?.conn?.name || ""}>
+              {connection?.conn?.name || ""}
+            </Typography>
           </Grid>
-          <Grid size={4}>
-            <Link to={"/view_connection/" + connection?.id || ""} />
-          </Grid>
-          <Grid container size={3} sx={{ justifyContent: "flex-end", alignItems: "center" }}>
+          <Grid
+            container
+            size="auto"
+            sx={{ justifyContent: "flex-end", alignItems: "center", flexWrap: "nowrap" }}
+          >
             {connected && (
               <>
                 <Tooltip title="Copy to Clipboard">
@@ -159,7 +164,7 @@ const ConnectionRow: React.FC<ConnectionRowProps> = ({
             )}
             {!connected && <Typography variant="subtitle2">Inactive</Typography>}
           </Grid>
-          <Grid container size={1} sx={{ justifyContent: "center" }}>
+          <Grid container size="auto" sx={{ justifyContent: "center" }}>
             <IconButton
               aria-controls="connection-menu"
               aria-haspopup="true"
@@ -209,10 +214,8 @@ const ConnectionRow: React.FC<ConnectionRowProps> = ({
             </Menu>
           </Grid>
         </Grid>
-        <Grid container size={12}>
-          <Grid size={12}>
-            <Divider />
-          </Grid>
+        <Grid size={12}>
+          <Divider />
         </Grid>
       </Grid>
     </>
