@@ -44,6 +44,7 @@ npm-debug.log.*
 /system_files/**/pomerium-cli.exe
 
 /assets/bin/pomerium-cli
+/assets/bin/pomerium-cli.exe
 
 # Transient build time metadata stored here
 src/meta.json

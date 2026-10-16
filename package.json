@@ -31,6 +31,7 @@
   },
   "main": "out/main/index.js",
   "scripts": {
+    "start": "electron-vite dev",
     "dev": "electron-vite dev",
     "build": "concurrently \"npm run download\" \"npm run metadata\" && electron-vite build",
     "preview": "electron-vite preview",

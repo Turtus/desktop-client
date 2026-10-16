@@ -6,6 +6,7 @@ import * as grpc from "@grpc/grpc-js";
 import * as Sentry from "@sentry/electron/main";
 import { app, BrowserWindow, dialog, ipcMain, MessageBoxOptions } from "electron";
 import contextMenu from "electron-context-menu";
+import electronDebug from "electron-debug";
 import log from "electron-log";
 import { autoUpdater } from "electron-updater";
 import { menubar } from "menubar";
@@ -67,7 +68,7 @@ class AppUpdater {
 }
 
 if (isDev || prodDebug) {
-  require("electron-debug")();
+  electronDebug();
 }
 
 const onUncaughtException = (() => {
@@ -131,7 +132,16 @@ async function init(): Promise<void> {
   const tray = trayMenuHelper.createTray();
   const menu = menubar({
     preloadWindow: true,
-    browserWindow: { width: 0, height: 0 },
+    browserWindow: {
+      width: 0,
+      height: 0,
+      webPreferences: {
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: false,
+        preload: join(__dirname, "../preload/index.js"),
+      },
+    },
     index: process.env.ELECTRON_RENDERER_URL || `file://${rendererIndexPath}`,
     tray,
   });

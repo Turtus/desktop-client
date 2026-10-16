@@ -167,8 +167,8 @@ const ConnectForm: FC<Props> = () => {
       <form onSubmit={handleSubmit}>
         <Stack spacing={2}>
           <Grid>
-            <Grid container alignItems="flex-start">
-              <Grid item xs={12}>
+            <Grid container sx={{ alignItems: "flex-start" }}>
+              <Grid size={12}>
                 <Typography variant="h3" color="textPrimary">
                   {connectionID ? "Edit" : "Add"} Connection
                 </Typography>
@@ -178,7 +178,7 @@ const ConnectForm: FC<Props> = () => {
           <StyledCard>
             <CardContent>
               <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TextField
                     fullWidth
                     required
@@ -190,7 +190,7 @@ const ConnectForm: FC<Props> = () => {
                     helperText="Name of the route."
                   />
                 </Grid>{" "}
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <FormControl fullWidth>
                     <InputLabel id="protocol-label">Protocol</InputLabel>
                     <Select
@@ -205,7 +205,7 @@ const ConnectForm: FC<Props> = () => {
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TextField
                     fullWidth
                     required
@@ -216,7 +216,7 @@ const ConnectForm: FC<Props> = () => {
                     helperText="The remote address to connect to. Example: mysql.example.com:3306 or tcp+https://proxy.example.com/mysql.example.com:3306"
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TextField
                     fullWidth
                     label="Local Address"
@@ -226,7 +226,7 @@ const ConnectForm: FC<Props> = () => {
                     helperText="The port or local address you want to connect to. Ex. :8888 or 127.0.0.1:8888"
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -243,7 +243,7 @@ const ConnectForm: FC<Props> = () => {
                     label="Start connection at app launch"
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TagSelector tags={tags} onChangeTags={setTags} />
                 </Grid>
               </Grid>
@@ -257,7 +257,7 @@ const ConnectForm: FC<Props> = () => {
             />
           </AdvancedSettingsAccordion>
 
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
+          <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
             <Button type="button" variant="contained" color="secondary" onClick={handleClickBack}>
               Back
             </Button>
